@@ -1,0 +1,88 @@
+install.packages('caTools')
+install.packages("ggplot2")
+install.packages("corrplot")
+
+
+library(dplyr)
+library(broom)
+library(caTools)
+library(ggplot2)
+
+getwd()
+
+#Loading dataset
+ads <- read.csv('datasets_582088_1052144_Advertising.csv')
+
+#Display first few lines (rows)
+head(ads)
+
+#Dimension
+dim(ads)
+
+ads <- ads[,2:5]
+dim(ads)
+head(ads)
+
+summary(ads)
+
+plot(ads$Sales,ads$TV, type='p', col='red')
+
+plot(ads$Sales,ads$Newspaper, type='p', col='blue')
+
+plot(ads$Sales,ads$Radio, type='p', col='green')
+
+pairs(ads)
+
+num.cols <- sapply(ads, is.numeric)
+num.cols
+
+cor.data <- cor(ads[,num.cols])
+cor.data
+# all correlation are above zero which implies there are postive correlation between the variables
+#The change in one of the variables will have a positive impact on the sales.
+#TV ads maximise the sales
+
+install.packages("corrplot")
+library(corrplot)
+
+corrplot(cor.data, method='color')
+
+#Building regression model
+#Simple Linear Regeression
+simple.Linear <- lm(Sales~TV, data=ads)
+summary(simple.Linear) #or tidy(simple.Linear)
+
+#Multiple linear regression model
+model_multiple <- lm(Sales~TV+Newspaper+Radio, data=ads)
+summary(model_multiple)
+
+tidy(model_multiple)
+
+cf <- summary(model_multiple)$coefficients
+cf
+
+#training the model
+
+set.seed(101)
+sample <- sample.split(ads$TV,SplitRatio = 0.7)
+train = subset(ads, sample==TRUE)
+test = subset(ads, sample==FALSE)
+
+model=lm(Sales~.,train)
+summary(model)
+
+res <- residuals(model)
+res <- as.data.frame(res)
+res
+
+Sales.prediction <- predict(model,test)
+Sales.prediction
+
+results <- cbind(Sales.prediction, test$Sales)
+colnames(results) <- c('pred','real')
+resutls <- as.data.frame(results)
+results
+
+
+########################Another demo
+demo <- read.csv()
